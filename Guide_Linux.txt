@@ -1,0 +1,148 @@
+Here is the clean, formatted guide ready to be pasted directly into your GitHub repository's `README.md` file. It organizes the installation, execution, and controls into highly scannable sections for anyone cloning your project on a Linux machine.
+
+***
+
+```markdown
+# 🐢 TurtleBot3 ROS 2 Jazzy Simulation Guide (Linux)
+
+
+
+This guide provides step-by-step instructions to install, build, and run the TurtleBot3 simulation using **ROS 2 Jazzy** (Ubuntu 24.04) and **Gazebo Sim (Harmonic)**. 
+
+---
+
+## 🛠️ Step 1: Install ROS 2 Jazzy & Dependencies
+
+Open a fresh terminal and run the following commands to get all required binaries for the simulation, navigation, and cartography.
+
+```bash
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y ros-jazzy-desktop software-properties-common python3-colcon-common-extensions python3-rosdep
+
+# Install Navigation, Cartographer, and Gazebo (Harmonic) ROS bridges
+sudo apt install -y ros-jazzy-ros-gz ros-jazzy-navigation2 ros-jazzy-nav2-bringup ros-jazzy-cartographer ros-jazzy-cartographer-ros ros-jazzy-teleop-twist-keyboard
+```
+
+Initialize `rosdep` if you haven't done so previously on this machine:
+
+```bash
+sudo rosdep init
+rosdep update
+```
+
+---
+
+## 🏗️ Step 2: Create & Build the Workspace
+
+We will pull the official `jazzy` branch for the TurtleBot3 simulations.
+
+```bash
+# 1. Create the Workspace
+mkdir -p ~/turtlebot3_ws/src
+cd ~/turtlebot3_ws/src
+
+# 2. Clone the official Jazzy branches
+git clone -b jazzy [https://github.com/ROBOTIS-GIT/turtlebot3.git](https://github.com/ROBOTIS-GIT/turtlebot3.git)
+git clone -b jazzy [https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git](https://github.com/ROBOTIS-GIT/turtlebot3_simulations.git)
+
+# 3. Resolve any missing workspace dependencies
+cd ~/turtlebot3_ws
+rosdep install --from-paths src --ignore-src -r -y
+
+# 4. Build the workspace cleanly
+colcon build --symlink-install
+```
+
+> **Note:** We are using the TurtleBot3 **Burger** model for these examples. 
+
+---
+
+## 🌍 Step 3: Run the Simulation Environments
+
+You will need to open multiple terminals to run the simulation, visualization, and controls simultaneously.
+
+### Option A: The Empty World
+A blank canvas for testing basic movement.
+
+**Terminal 1: Launch Gazebo**
+```bash
+source /opt/ros/jazzy/setup.bash
+source ~/turtlebot3_ws/install/setup.bash
+export TURTLEBOT3_MODEL=burger
+
+ros2 launch turtlebot3_gazebo empty_world.launch.py
+```
+
+**Terminal 2: Launch RViz 2 (Visualization)**
+
+```bash
+source /opt/ros/jazzy/setup.bash
+source ~/turtlebot3_ws/install/setup.bash
+
+ros2 run rviz2 rviz2
+```
+
+### Option B: The House World
+A structured environment perfect for mapping and navigation testing.
+
+**Terminal 1: Launch Gazebo**
+```bash
+source /opt/ros/jazzy/setup.bash
+source ~/turtlebot3_ws/install/setup.bash
+export TURTLEBOT3_MODEL=burger
+
+ros2 launch turtlebot3_gazebo turtlebot3_house.launch.py
+```
+
+**Terminal 2: Launch RViz 2 (Pre-configured for TurtleBot3)**
+```bash
+source /opt/ros/jazzy/setup.bash
+source ~/turtlebot3_ws/install/setup.bash
+export TURTLEBOT3_MODEL=burger
+
+ros2 launch turtlebot3_bringup rviz2.launch.py
+```
+
+---
+
+## ⌨️ Step 4: Driving the Robot (Teleop)
+
+To manually drive the robot around either world, open a new terminal and run the teleop node:
+
+```bash
+source /opt/ros/jazzy/setup.bash
+export TURTLEBOT3_MODEL=burger
+
+ros2 run turtlebot3_teleop teleop_keyboard
+```
+
+### The Movement Controls
+
+| Key | Action |
+| :--- | :--- |
+| **w** | Forward (Increases linear speed) |
+| **x** | Backward (Decreases linear speed / Goes in reverse) |
+| **a** | Turn Left (Increases angular speed counter-clockwise) |
+| **d** | Turn Right (Increases angular speed clockwise) |
+| **s** or **Space** | 🛑 **EMERGENCY STOP** (Zeros out all movement instantly) |
+
+### 🧠 Driving Tips
+* **The "Gas Pedal" Logic:** If you tap `w` once, the robot creeps forward. Tap it again, and it accelerates. It will not stop on its own until you tap `x` to slow down or press `s` to stop completely.
+* **Terminal Focus:** The controls only register if your teleop terminal is the active window. The robot will not drive if you are clicked inside the Gazebo or RViz windows.
+* **Burger Speed Limits:** * Max Linear Velocity: **~0.22 m/s**
+  * Max Angular Velocity: **~2.84 rad/s**
+
+---
+
+## 💡 Pro-Tips & Troubleshooting
+
+* **Persist your environment:** If you don't want to type `export TURTLEBOT3_MODEL=burger` every time you open a terminal, add it to your bashrc:
+  ```bash
+  echo 'export TURTLEBOT3_MODEL=burger' >> ~/.bashrc
+  source ~/.bashrc
+  ```
+* **Graphics Lag in RViz?** If RViz hangs or crashes due to hardware GPU driver issues on Ubuntu, force a software graphics pipeline:
+  ```bash
+  LIBGL_ALWAYS_SOFTWARE=1 ros2 run rviz2 rviz2
+  ```
+```
