@@ -1,0 +1,15 @@
+# ROS 2 Workspace Build Files
+build/
+install/
+log/
+
+# Python virtual environments
+venv/
+env/
+.env
+
+# IDE and OS files
+.vscode/
+.idea/
+*.swp
+.DS_Store
